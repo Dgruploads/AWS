@@ -1,0 +1,62 @@
+---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "Cloudformation template for launch an EC2 instance."
+
+  Parameters:
+    KeyPair:
+      Description: "Specify the key pair to launch EC2 instance."
+      Type: AWS::EC2::KeyPair::KeyName
+      ConstraintDescription: "Must be a valid key pair."
+
+    InstanceType:
+      Description: "Specify the Instance type."
+      Type: "String"
+      Default: t2.micro
+      ConstraintDescription: "Must be a valid Instance Type."
+
+    Subnets:
+      Description: "Specify the subnets."
+      Type: AWS::EC2::Subnet::Id
+      ConstraintDescription: "Must be a valid Subnet."
+
+    ImageAMI:
+      Description: "Specify the Image."
+      Type: "String"
+      Default: "ami-0b898040803850657"
+      ConstraintDescription: "Must be a valid Image."
+
+
+  Resources:
+    SecurityGroup:
+      Description: "Specify the security group for EC2."
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Security Group for EC2 instance."
+        SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+          CidrIp: "0.0.0.0/0"
+        Tags:
+        - Key: "EC2 Security Group"
+          Value: "EC2 Security Group"
+
+    EC2Instance:
+      Description: "Specify the details for EC2 instance."
+      Type: AWS::EC2::Instance
+      Properties:
+        ImageId: !Ref ImageAMI
+        InstanceType: !Ref InstanceType
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        Tags:
+          - Key: Key
+            Value: "EC2Instance- CFN"
