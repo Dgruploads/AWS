@@ -1,0 +1,153 @@
+---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "This template will create a vpc, ec2 and run a script using the user data."
+
+##################################################################
+##ALL THE PARAMETERS FOR THE INTRASTRUCTURE WILL GO HERE        ##
+##################################################################
+  Parameters:
+    KeyName:
+      Description: "Please specify the key pair to use for instances."
+      Type: AWS::EC2::KeyPair::KeyName
+      ConstraintDescription: "Must be a valid Key pair."
+
+    InstanceType:
+      Description: "Please specify the instance type for the instances."
+      Type: "String"
+      Default: "t2.micro"
+      ConstraintDescription: "Must be a valid instance type."
+
+    ImageAMI:
+      Description: "Please specify the AMI to use for the instance."
+      Type: "String"
+      Default: "ami-0b898040803850657"
+
+
+##################################################################
+##ALL THE RESOURCES THAT YOU WANT TO CREATE WILL GO HERE.       ##
+##################################################################
+  Resources:
+    InstanceProfile:
+      Description: "Please specify the role for the instance."
+      Type: "AWS::IAM::InstanceProfile"
+      Properties:
+        Path: "/"
+        Roles: 
+        - "roleforec2"
+
+    SecurityGroup:
+      Description: "Please specify the security group for the instances."
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Security group for Instance."
+        VpcId:
+          !Ref Vpc
+        SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+          CidrIp: "0.0.0.0/0"
+        Tags:
+        - Key: "Name"
+          Value: "Security Group for Ec2 instance."
+
+    Vpc:
+      Description: "Please specify the VPC to create for the instance."
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.0.0.0/16"
+        EnableDnsHostnames: "true"
+        InstanceTenancy: "default"
+        Tags:
+        - Key: "Name"
+          Value: "CFN-VPC"
+
+    PublicSubnet:
+      Description: "Please specify the public subnet."
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: 
+          !Ref Vpc
+        CidrBlock: "10.0.1.0/24"
+        AvailabilityZone: "us-east-1a"
+        Tags:
+        - Key: "Name"
+          Value: "Public-subnet"
+
+    PrivateSubnet:
+      Description: "Please specify the private subnet."
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId:
+          !Ref Vpc
+        CidrBlock: "10.0.2.0/24"
+        AvailabilityZone: "us-east-1b"
+        Tags:
+        - Key: "Name"
+          Value: "Private-subnet"
+    
+    InternetGW:
+      Description: "Please specify the internet gateway."
+      Type: "AWS::EC2::InternetGateway"
+      DependsOn: Vpc
+
+    AttachGateway:
+      Description: "Attaching the gateway to the VPC."
+      Type: "AWS::EC2::VPCGatewayAttachment"
+      Properties:
+        VpcId: !Ref Vpc
+        InternetGatewayId: !Ref InternetGW
+
+    PublicRouteTable:
+      Description: "Please specify the public route table."
+      Type: "AWS::EC2::RouteTable"
+      Properties:
+        VpcId: !Ref Vpc
+        Tags:
+        - Key: "Name"
+          Value: "PublicRouteTable"
+    
+    PrivateRouteTable:
+      Description: "Please specify the public route table."
+      Type: "AWS::EC2::RouteTable"
+      Properties:
+        VpcId: !Ref Vpc
+        Tags:
+        - Key: "Name"
+          Value: "PrivateRouteTable"
+
+    PublicRoute:
+      Description: "Please specify the CIDR to add to the route table."
+      Type: "AWS::EC2::Route"
+      Properties:
+        RouteTableId: !Ref PublicRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId: !Ref InternetGW
+
+    PublicRouteTableSubnetAssociation:
+      Description: "Please specify the subnet to associate with the public route table."
+      Type: "AWS::EC2::SubnetRouteTableAssociation"
+      Properties:
+        SubnetId: !Ref PublicSubnet
+        RouteTableId: !Ref PublicRouteTable
+
+    Ec2Instance:
+      Description: "Properties to launch the ec2 instance."
+      Type: "AWS::EC2::Instance"
+      Properties:
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+        ImageId: !Ref ImageAMI
+        InstanceType: !Ref InstanceType
+        SubnetId: !Ref "PublicSubnet"
+        IamInstanceProfile: !Ref "InstanceProfile"
+        UserData: "aws s3 cp s3://dgruploads-test/test.sh /home/ec2-user && chmod +x /home/ec2-user/test.sh && ./home/ec2-user/test.sh >> /home/ec2-user/output.txt"
+        Fn::BASE64: UserData
