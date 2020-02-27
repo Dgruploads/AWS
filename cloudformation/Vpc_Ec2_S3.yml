@@ -27,6 +27,10 @@
 ##ALL THE RESOURCES THAT YOU WANT TO CREATE WILL GO HERE.       ##
 ##################################################################
   Resources:
+
+##################################################################
+##Specify the role to be used by EC2.                           ##
+##################################################################
     InstanceProfile:
       Description: "Please specify the role for the instance."
       Type: "AWS::IAM::InstanceProfile"
@@ -35,6 +39,9 @@
         Roles: 
         - "roleforec2"
 
+##################################################################
+##Create a security group for EC2.                              ##
+##################################################################
     SecurityGroup:
       Description: "Please specify the security group for the instances."
       Type: "AWS::EC2::SecurityGroup"
@@ -59,6 +66,10 @@
         - Key: "Name"
           Value: "Security Group for Ec2 instance."
 
+##################################################################
+##Create a VPC for the instance.                                ##
+##################################################################
+
     Vpc:
       Description: "Please specify the VPC to create for the instance."
       Type: AWS::EC2::VPC
@@ -70,6 +81,9 @@
         - Key: "Name"
           Value: "CFN-VPC"
 
+##################################################################
+##Create a public subnet and attach to VPC.                     ##
+##################################################################
     PublicSubnet:
       Description: "Please specify the public subnet."
       Type: "AWS::EC2::Subnet"
@@ -78,10 +92,14 @@
           !Ref Vpc
         CidrBlock: "10.0.1.0/24"
         AvailabilityZone: "us-east-1a"
+        MapPublicIpOnLaunch: true
         Tags:
         - Key: "Name"
           Value: "Public-subnet"
 
+##################################################################
+##Create a private subnet and attach to VPC.                    ##
+##################################################################
     PrivateSubnet:
       Description: "Please specify the private subnet."
       Type: "AWS::EC2::Subnet"
@@ -93,12 +111,18 @@
         Tags:
         - Key: "Name"
           Value: "Private-subnet"
-    
+
+##################################################################
+## Create a Internet gateway.                                   ##
+##################################################################    
     InternetGW:
       Description: "Please specify the internet gateway."
       Type: "AWS::EC2::InternetGateway"
       DependsOn: Vpc
 
+##################################################################
+##Attach the IGW to the VPC.                                    ##
+##################################################################
     AttachGateway:
       Description: "Attaching the gateway to the VPC."
       Type: "AWS::EC2::VPCGatewayAttachment"
@@ -106,6 +130,9 @@
         VpcId: !Ref Vpc
         InternetGatewayId: !Ref InternetGW
 
+##################################################################
+##Create a route table for the public subnet.                   ##
+##################################################################
     PublicRouteTable:
       Description: "Please specify the public route table."
       Type: "AWS::EC2::RouteTable"
@@ -114,7 +141,10 @@
         Tags:
         - Key: "Name"
           Value: "PublicRouteTable"
-    
+
+##################################################################
+##Create a route table for the private subnet.                  ##
+##################################################################    
     PrivateRouteTable:
       Description: "Please specify the public route table."
       Type: "AWS::EC2::RouteTable"
@@ -124,6 +154,9 @@
         - Key: "Name"
           Value: "PrivateRouteTable"
 
+##################################################################
+##Add a route to the public route table.                        ##
+##################################################################
     PublicRoute:
       Description: "Please specify the CIDR to add to the route table."
       Type: "AWS::EC2::Route"
@@ -132,6 +165,9 @@
         DestinationCidrBlock: "0.0.0.0/0"
         GatewayId: !Ref InternetGW
 
+##################################################################
+## Associate the public subnet to the public route table.       ##
+##################################################################
     PublicRouteTableSubnetAssociation:
       Description: "Please specify the subnet to associate with the public route table."
       Type: "AWS::EC2::SubnetRouteTableAssociation"
@@ -139,6 +175,9 @@
         SubnetId: !Ref PublicSubnet
         RouteTableId: !Ref PublicRouteTable
 
+##################################################################
+##Launch the EC2 instance using the above parameters.           ##
+##################################################################
     Ec2Instance:
       Description: "Properties to launch the ec2 instance."
       Type: "AWS::EC2::Instance"
@@ -149,5 +188,17 @@
         InstanceType: !Ref InstanceType
         SubnetId: !Ref "PublicSubnet"
         IamInstanceProfile: !Ref "InstanceProfile"
-        UserData: "aws s3 cp s3://dgruploads-test/test.sh /home/ec2-user && chmod +x /home/ec2-user/test.sh && ./home/ec2-user/test.sh >> /home/ec2-user/output.txt"
-        Fn::BASE64: UserData
+        KeyName: !Ref KeyName
+##################################################################
+##Provide the user data to be executed in the EC2 instance.     ##
+##################################################################
+        UserData: 
+          Fn::Base64:
+            !Sub |
+              #!/bin/bash
+              yum update -y
+              yum install cloud-init -y
+              aws s3 cp s3://dgruploads-test/test.sh /home/ec2-user
+              chmod +x /home/ec2-user/test.sh
+              cd /home/ec2-user/
+              ./test.sh >> /home/ec2-user/output.txt
