@@ -1,0 +1,45 @@
+##This guide will help you to setup tomcat on EC2 and deploy a sample.war package on the server##
+
+Step 1 : Launch an EC2 instance. You can choose your AMI. I am using "Amazon Linux AMI". Login to the instance.
+
+Step 2 : Download tomcat from the following URL : https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.53/bin/apache-tomcat-8.5.53.tar.gz
+I am using tomcat version 8. You can run the below command to download the tomcat to your instance.
+
+Wget https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.53/bin/apache-tomcat-8.5.53.tar.gz
+
+Step 3 : Untar the downloaded files. You can run the below command.
+
+tar -xzf apache-tomcat-8.5.53.tar.gz. This will untar the file.
+
+Step 4 : Rename the folder to tomcat. Run the below command.
+
+mv apache-tomcat-8.5.53 tomcat
+
+Step 5 : Move the folder to /usr/local. This step is optional but recommended. Run the below command.
+
+cp tomct /usr/local/
+
+Step 6 : Go to the tomcat folder and change your location to webapps. Download the sample.war file to this location. You can download the war file from the below url.
+
+https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/sample.war. You can run the below command to download to the instance.
+
+wget https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/sample.war
+
+Step 7 : Go to the bin location in the tomcat folder. Run the below command.
+
+./catalina.sh start : This will start the tomcat server and it should be running on port number 8080. 
+
+Make sure you open the port in the security group.
+
+Step 8 : Go to the browser and access the following :
+
+ipaddress:8080/sample
+
+You should be able to see the sample war file running in the tomcat server.
+
+
+
+
+
+
+
