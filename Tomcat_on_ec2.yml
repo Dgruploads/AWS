@@ -25,7 +25,7 @@ Step 4 : Rename the folder to tomcat. Run the below command.
 
 Step 5 : Move the folder to /usr/local. This step is optional but recommended. Run the below command.
 
-    cp tomcat /usr/local/
+    cp -R tomcat /usr/local/
 
 Step 6 : Go to the tomcat folder and change your location to webapps. Download the sample.war file to this location. You can download the war file from the below url.
 
@@ -34,6 +34,8 @@ Step 6 : Go to the tomcat folder and change your location to webapps. Download t
     wget https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/sample.war
 
 Step 7 : Go to the bin location in the tomcat folder. Run the below command.
+
+    cd bin/
 
     ./catalina.sh start : This will start the tomcat server and it should be running on port number 8080. 
 
@@ -44,6 +46,11 @@ Step 8 : Go to the browser and access the following :
     ipaddress:8080/sample
 
 You should be able to see the sample war file running in the tomcat server.
+
+If you are getting any errors, you can look at the logs for the tomcat servers. The logs are present in the logs folder under the tomcat directory.
+    
+    cd logs
+    nano catalina.out : This will contain the logs.
 
 
 
