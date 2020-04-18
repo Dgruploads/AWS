@@ -1,0 +1,30 @@
+=========================================================
+HOW TO SCP FROM LOCAL HOST TO EC2 INSTANCE AND VICE VERSE
+=========================================================
+What is scp?
+	scp (secure copy) command in Linux system is used to copy file(s) between servers in a secure way. The SCP command or secure copy allows secure transferring of files in between the local host and the remote host or between two remote hosts. SCP is known for its simplicity, security and pre-installed availability.
+
+==========================================
+COPYING FROM LOCAL MACHINE TO EC2 INSTANCE
+==========================================
+To copy from local to ec2 instance, you can use the below command. You will be running this command on the local machine command line.
+
+	scp -i <pem file> <file_to_copy_from_local> ec2-user@<ip_address>:<location_in_the_instance>
+  EG : scp -i linux-server-ubuntu.pem file_for_ec2.html ec2-user@54.210.115.132:/home/ec2-user
+
+==========================================
+COPYING FROM EC2 INSTANCE TO LOCAL MACHINE
+==========================================
+To copy from ec2 instance to local, you can use the below command. You will be running this command on the local machine command line.
+
+	scp -i <pem file> ec2-user@<ip_address>:<file_to_copy_from_instance> <destination_in_local>
+  Eg : scp -i linux-server-ubuntu.pem ec2-user@54.210.115.132:/home/ec2-user/file_for_ec2.html . (Here " . " indicates to copy the file in my current directory)
+
+
+
+
+
+
+
+
+
