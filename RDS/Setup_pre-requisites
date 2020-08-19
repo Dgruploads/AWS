@@ -1,0 +1,7 @@
+## Update the machine ##
+sudo yum update -y
+
+## Install httpd, php and mysql server ##
+sudo yum install -y httpd24 php56 php56-mysqlnd
+
+sudo service httpd start
