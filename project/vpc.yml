@@ -1,0 +1,153 @@
+---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "This template will create a vpc, ec2 and run a script using the user data."
+
+##################################################################
+##ALL THE PARAMETERS FOR THE INTRASTRUCTURE WILL GO HERE        ##
+##################################################################
+  Parameters:
+    VpcCidr:
+      Description: "Specify the cidr block for the custom vpc."
+      Type: String
+      Default: "10.0.0.0/16"
+      ConstraintDescription: "Must be a valid cidr block"
+
+    PublicSubnetOneWordpress:
+      Description: "Specify the cidr block for the first public subnet."
+      Type: String
+      Default: "10.0.1.0/24"
+      ConstraintDescription: "Must be a valid cidr block"
+
+    PublicSubnetTwoWordpress:
+      Description: "Specify the cidr block for the second public subnet."
+      Type: String
+      Default: "10.0.2.0/24"
+      ConstraintDescription: "Must be a valid cidr block."
+
+##################################################################
+##ALL THE RESOURCES THAT YOU WANT TO CREATE WILL GO HERE.       ##
+##################################################################
+  Resources:
+##################################################################
+##Create a security group for EC2.                              ##
+##################################################################
+    SecurityGroup:
+      Description: "Please specify the security group for the instances."
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Security group for Instance."
+        VpcId:
+          !Ref Vpc
+        SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+          CidrIp: "0.0.0.0/0"
+        Tags:
+        - Key: "Name"
+          Value: "Security Group for Ec2 instance."
+
+##################################################################
+##Create a VPC for the instance.                                ##
+##################################################################
+
+    Vpc:
+      Description: "Please specify the VPC to create for the instance."
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: !Ref VpcCidr
+        EnableDnsHostnames: "true"
+        InstanceTenancy: "default"
+        Tags:
+        - Key: "Name"
+          Value: "wordpress-vpc"
+
+##################################################################
+##Create a public subnet one and attach to VPC.                 ##
+##################################################################
+    PublicSubnetOne:
+      Description: "Please specify the public subnet."
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: 
+          !Ref Vpc
+        CidrBlock: !Ref PublicSubnetOneWordpress
+        AvailabilityZone: "us-east-1a"
+        MapPublicIpOnLaunch: true
+        Tags:
+        - Key: "Name"
+          Value: "wordpress-public-subnet-one"
+
+##################################################################
+##Create a public subnet two and attach to VPC.                 ##
+##################################################################
+    PublicSubnetTwo:
+      Description: "Please specify the public subnet."
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: 
+          !Ref Vpc
+        CidrBlock: !Ref PublicSubnetTwoWordpress
+        AvailabilityZone: "us-east-1a"
+        MapPublicIpOnLaunch: true
+        Tags:
+        - Key: "Name"
+          Value: "wordpress-public-subnet-two"
+##################################################################
+## Create a Internet gateway.                                   ##
+##################################################################    
+    InternetGW:
+      Description: "Please specify the internet gateway."
+      Type: "AWS::EC2::InternetGateway"
+      DependsOn: Vpc
+
+##################################################################
+##Attach the IGW to the VPC.                                    ##
+##################################################################
+    AttachGateway:
+      Description: "Attaching the gateway to the VPC."
+      Type: "AWS::EC2::VPCGatewayAttachment"
+      Properties:
+        VpcId: !Ref Vpc
+        InternetGatewayId: !Ref InternetGW
+
+##################################################################
+##Create a route table for the public subnet.                   ##
+##################################################################
+    PublicRouteTable:
+      Description: "Please specify the public route table."
+      Type: "AWS::EC2::RouteTable"
+      Properties:
+        VpcId: !Ref Vpc
+        Tags:
+        - Key: "Name"
+          Value: "WordpressPublicRouteTable"
+
+##################################################################
+##Add a route to the public route table.                        ##
+##################################################################
+    PublicRoute:
+      Description: "Please specify the CIDR to add to the route table."
+      Type: "AWS::EC2::Route"
+      Properties:
+        RouteTableId: !Ref PublicRouteTable
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId: !Ref InternetGW
+
+##################################################################
+## Associate the public subnet to the public route table.       ##
+##################################################################
+    PublicRouteTableSubnetAssociation:
+      Description: "Please specify the subnet to associate with the public route table."
+      Type: "AWS::EC2::SubnetRouteTableAssociation"
+      Properties:
+        SubnetId: !Ref PublicSubnetOne
+        RouteTableId: !Ref PublicRouteTable
