@@ -21,6 +21,11 @@
       Type: AWS::EC2::VPC::Id
       ConstraintDescription: "Must be a valid VPC."
 
+    Instance:
+      Description: "Specify the instance to attach to the target group."
+      Type: AWS::EC2::Instance::Id
+      ConstraintDescription: "Must be a valid instance ID."
+
 ##################################################################
 ##ALL THE RESOURCES THAT YOU WANT TO CREATE WILL GO HERE.       ##
 ##################################################################
@@ -59,6 +64,10 @@
         VpcId: !Ref VpcId
         Port: 80
         Protocol: HTTP
+        Targets: 
+          - Id:
+               !Ref Instance
+            Port: 80
         HealthCheckEnabled: True
         HealthCheckIntervalSeconds: 10
         HealthCheckPath: /index.html
