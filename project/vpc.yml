@@ -1,6 +1,6 @@
 ---
   AWSTemplateFormatVersion: "2010-09-09"
-  Description: "This template will create a vpc, ec2 and run a script using the user data."
+  Description: "This template will create a custom VPC."
 
 ##################################################################
 ##ALL THE PARAMETERS FOR THE INTRASTRUCTURE WILL GO HERE        ##
@@ -96,7 +96,7 @@
         VpcId: 
           !Ref Vpc
         CidrBlock: !Ref PublicSubnetTwoWordpress
-        AvailabilityZone: "us-east-1a"
+        AvailabilityZone: "us-east-1b"
         MapPublicIpOnLaunch: true
         Tags:
         - Key: "Name"
