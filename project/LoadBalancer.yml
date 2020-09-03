@@ -1,0 +1,72 @@
+---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "This template will create a vpc, ec2 and run a script using the user data."
+
+##################################################################
+##ALL THE PARAMETERS FOR THE INTRASTRUCTURE WILL GO HERE        ##
+##################################################################
+  Parameters:
+    Subnets:
+      Description: "Specify the subnets for the load balancer."
+      Type: List<AWS::EC2::Subnet::Id>
+      ConstraintDescription: "Must be a valid subnet ids."
+
+    SecurityGroup:
+      Description: "Specify the seucity group for the load balancer."
+      Type: AWS::EC2::SecurityGroup::Id
+      ConstraintDescription: "Must be a valid security group"
+
+    VpcId:
+      Description: "Specify the VPC for the load balancer."
+      Type: AWS::EC2::VPC::Id
+      ConstraintDescription: "Must be a valid VPC."
+
+##################################################################
+##ALL THE RESOURCES THAT YOU WANT TO CREATE WILL GO HERE.       ##
+##################################################################
+  Resources:
+##################################################################
+##Create a security group for EC2.                              ##
+##################################################################
+    LoadBalancer:
+      Description: "Please specify the load balancer to be created for the application."
+      Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+      Properties:
+        Name: wordpress-load-balancer
+        Subnets: !Ref Subnets
+        SecurityGroups:
+          - !Ref SecurityGroup
+        Tags:
+          - Key: Name
+            Value: wordpressloadbalancer
+
+    LoadBalancerListener:
+      Description: "Please specify the listener for the load balancer."
+      Type: "AWS::ElasticLoadBalancingV2::Listener"
+      Properties:
+        LoadBalancerArn: !Ref LoadBalancer
+        Port: 80
+        Protocol: HTTP
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref WordpressTargetGroup
+
+    WordpressTargetGroup:
+      Description: "Please specify the target group for the load balancer."
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: WordpressTargetGroup
+        VpcId: !Ref VpcId
+        Port: 80
+        Protocol: HTTP
+        HealthCheckEnabled: True
+        HealthCheckIntervalSeconds: 10
+        HealthCheckPath: /index.html
+        HealthCheckPort: 80
+        HealthCheckProtocol: HTTP
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 2
+        UnhealthyThresholdCount: 3
+        Tags:
+          - Key: Name
+            Value: wordpress-target-group
