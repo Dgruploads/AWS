@@ -1,6 +1,6 @@
 ---
   AWSTemplateFormatVersion: "2010-09-09"
-  Description: "This template will create a vpc, ec2 and run a script using the user data."
+  Description: "This template will create a application load balancer, a listerner and a target group."
 
 ##################################################################
 ##ALL THE PARAMETERS FOR THE INTRASTRUCTURE WILL GO HERE        ##
