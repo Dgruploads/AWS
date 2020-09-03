@@ -1,0 +1,136 @@
+---
+  AWSTemplateFormatVersion: "2010-09-09"
+  Description: "This template will launch an ec2 instance and RDS server."
+        
+############################################################################
+# This section will specify the paramters that we will use for the resoures#
+############################################################################
+  Parameters:
+    SecurityGroup:
+      Description: "Specify the security group to use for the instance."
+      Type: AWS::EC2::SecurityGroup::Id
+      ConstraintDescription: "Must be a valid security group."
+
+    ImageId:
+      Description: "Specify the image AMI to use for the instance."
+      Type: "String"
+      Default: ami-098f16afa9edf40be
+      ConstraintDescription: "Must be a valid AMI."
+
+    InstanceType:
+      Description: "Specify the instance type for your EC2."
+      Type: "String"
+      Default: t2.micro
+      ConstraintDescription: "Must be a valid Instance type."
+
+    KeyPair:
+      Description: "Specify the key pair for the instance"
+      Type: AWS::EC2::KeyPair::KeyName
+      ConstraintDescription: "Must be a valid Key Name."
+
+    Subnet:
+      Description: "Specify the subnet in which you want to launch the instance."
+      Type: AWS::EC2::Subnet::Id
+      ConstraintDescription: "Must be a valid Subnet."
+
+    AllocatedStorage:
+      Description: "Specify the storage for the database."
+      Type: "String"
+      AllowedPattern: "^([2-9]?[0-9]{1}|[0-9]{3,4}|1[0-5]?[0-9]{3}|16[0-2]?[0-9]{2}|163[0-7]?[0-9]{1}|1638[0-4]?)$"
+      ConstraintDescription: "Value must be a valid number between 20-163684"
+
+    DBVPCSecurityGroups:
+      Description: "Specify the security group to attach to the DB instance."
+      Type: List<AWS::EC2::SecurityGroup::Id>
+      ConstraintDescription: "Must be a valid security group ID."
+
+    DBInstanceClass:
+      Description: "Specify the instance type for the database."
+      Type: "String"
+      Default: db.t2.micro
+      ConstraintDescription: "Must be a valid instance type for the database."
+
+    DBEngine:
+      Description: "Specify the Engine for the database."
+      Type: "String"
+      Default: mysql
+      AllowedValues: [mysql, mariadb, postgres]
+      ConstraintDescription: "Please specify either mysql, mariadb or postgres for the RDS instance."
+
+    DBSubnetGroupName:
+      Description: "Specify the subnet group to be associated with the DB instance."
+      Type: "String"
+      Default: default-vpc-00f6f586c20bfc847
+      ConstraintDescription: "Must be a valid Subnet group name."
+
+    DBName:
+      Description: "specify the Database to create."
+      Type: "String"
+      Default: wordpress
+      ConstraintDescription: "Please specify the name for the database to  create."
+
+    MasterUsername:
+      Description: "Provide the user name for the DB instance."
+      Type: "String"
+
+    MasterPassword:
+      Description: "Provide the password for the DB instance."
+      Type: "String"
+      NoEcho: true
+
+#######################################################################
+# This section will specify the resources that we are going to create # 
+#######################################################################
+  Resources:
+
+##################################################################
+# Specify the role to be used by EC2.                            #
+##################################################################
+    InstanceProfile:
+      Description: "Please specify the role for the instance."
+      Type: "AWS::IAM::InstanceProfile"
+      Properties:
+        Path: "/"
+        Roles: 
+        - "roleforec2"
+
+#############################
+# Launching an RDS instance.#
+#############################
+    RDSInstance:
+      Description: "Specify the parameters for the RDS instance."
+      Type: AWS::RDS::DBInstance
+      Properties:
+        AllocatedStorage: !Ref AllocatedStorage
+        DBInstanceClass: !Ref DBInstanceClass
+        Engine: !Ref DBEngine
+        DBSubnetGroupName: !Ref DBSubnetGroupName
+        DBName: !Ref DBName
+        VPCSecurityGroups: !Ref DBVPCSecurityGroups
+        MasterUsername: !Ref MasterUsername
+        MasterUserPassword: !Ref MasterPassword
+        PubliclyAccessible: true
+        StorageType: gp2
+        Tags:
+          - Key: Name
+            Value: !Sub
+              - ${AWS::StackName}-${Name}
+              - { Name: !Ref DBName }
+
+#############################
+# Launching an EC2 instance.#
+#############################
+    EC2Instance:
+      Description: "This will launch an EC2 instance"
+      Type: AWS::EC2::Instance
+      Properties:
+        ImageId: !Ref ImageId
+        InstanceType: !Ref InstanceType
+        SubnetId: !Ref Subnet
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        IamInstanceProfile: !Ref InstanceProfile
+        KeyName: !Ref KeyPair
+        Tags:
+        - Key: "Name"
+          Value: "wordpress-server"
