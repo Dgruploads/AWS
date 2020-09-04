@@ -1,0 +1,16 @@
+#Create a role for Ec2 with access to Cloudwatch.
+
+#Install the agent
+sudo yum install awslogs
+
+#Verify the region you are working in
+nano /etc/awslogs/awscli.conf
+
+#Edit the log config file to add your logs file path
+nano /etc/awslogs/awslogs.conf
+
+#start the logs agent and enable the service
+service awslogsd start
+systemctl  enable awslogsd
+
+Verify the logs in Cloudwatch logs.
