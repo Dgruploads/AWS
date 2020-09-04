@@ -1,0 +1,21 @@
+###################################################
+# This setup is specifically for Amazon Linux AMI #    
+###################################################
+Step 1 : Install apache server.
+        yum install httpd -y
+       
+Step 2 : Install php packages
+    amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+
+Step 3 : Download the wordpress package
+    wget https://wordpress.org/latest.tar.gz
+
+Step 4 : Untar the package
+    tar -xzf latest.tar.gz
+
+Step 5 : Copy the contents to /var/www/html
+    cp -r /tmp/wordpress/* /var/www/html/
+
+Step 6 : Restart the apache server
+    service httpd restart
+      
