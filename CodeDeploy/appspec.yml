@@ -1,0 +1,19 @@
+version: 0.0
+os: linux
+hooks:
+  BeforeInstall:
+  - location: scripts/install_tomcat.sh
+    timeout: 300
+    runas: root
+  AfterInstall:
+  - location: scripts/copy_files.sh
+    timeout: 300
+    runas: root
+  ApplicationStart:
+  - location: scripts/start.sh
+    timeout: 300
+    runas: root
+  ApplicationStop:
+  - location: scripts/stop.sh
+    timeout: 300
+    runas: root
