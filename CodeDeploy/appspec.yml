@@ -6,7 +6,7 @@ hooks:
     timeout: 300
     runas: root
   AfterInstall:
-  - location: scripts/copy_files.sh
+  - location: scripts/copy.sh
     timeout: 300
     runas: root
   ApplicationStart:
