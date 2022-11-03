@@ -1,0 +1,25 @@
+src/redis-cli -h cluster-endpoint -c -p port number
+
+Example : src/redis-cli -h demo-001.1dxp2b.0001.use1.cache.amazonaws.com -c -p 6379
+
+Once connected to the cluster, you should be able to see the below output.
+
+cluster-endpoint:port number
+
+Example : demo-001.1dxp2b.0001.use1.cache.amazonaws.com:6379>
+
+Example commands to interact with the cluster.
+
+set x Hi
+
+set y Hello
+
+set z Bye
+
+get x
+
+get y
+
+get z
+
+help
