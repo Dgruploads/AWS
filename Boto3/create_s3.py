@@ -20,3 +20,9 @@ for bucket in s3.buckets.all():
 #Upload a new file
 data = open("index.html","rb")
 s3.Bucket("dgruploads-bucket").put_object(Key="index.html", Body=data)
+
+# Delete the S3 bucket
+delete_bucket = client.delete_bucket(
+    Bucket='dgruploads-bucket',
+)
+print(delete_bucket)
