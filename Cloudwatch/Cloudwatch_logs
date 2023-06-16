@@ -1,5 +1,5 @@
 #Install the agent
-sudo yum install awslogs
+sudo yum install amazon-cloudwatch-agent
 
 #Verify the region you are working in
 nano /etc/awslogs/awscli.conf
