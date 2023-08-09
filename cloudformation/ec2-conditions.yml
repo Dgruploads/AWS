@@ -1,0 +1,41 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: test
+    Type: String
+    AllowedValues:
+      - prod
+      - test
+    ConstraintDescription: must specify prod or test.
+
+Conditions:
+  CreateProdResources: !Equals 
+    - !Ref EnvType
+    - prod
+
+Resources:
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: "ami-0f34c5ae932e6f0e4"
+      InstanceType: "t2.micro"
+      Tags:
+      - Key: "Name"
+        Value: "non-drfit"
+  NewVolume:
+    Type: 'AWS::EC2::Volume'
+    Condition: CreateProdResources
+    Properties:
+      Size: 20
+      AvailabilityZone: !GetAtt 
+        - EC2Instance
+        - AvailabilityZone
+  MountPoint:
+    Type: 'AWS::EC2::VolumeAttachment'
+    Condition: CreateProdResources
+    Properties:
+      InstanceId: !Ref EC2Instance
+      VolumeId: !Ref NewVolume
+      Device: /dev/sdh
