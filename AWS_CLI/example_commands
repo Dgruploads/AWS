@@ -1,0 +1,19 @@
+################  AWS_CLI S3 commands  ################
+aws s3 ls ===> List all the S3 buckets
+aws s3 mb s3://dgruploads-demo-new ===> Create a new S3 bucket
+aws s3 cp ./example.txt s3://dgruploads-demo-new ===> Upload a file to S3 bucket
+aws s3 ls s3://dgruploads-demo-new ===> List the contents of an S3 bucket
+aws s3 rm s3://dgruploads-demo-new/example.txt ===> Delete file from S3 bucket
+aws s3 rb s3://dgruploads-demo-new --force ===> Delete the S3 bucket
+
+################  AWS_CLI EC2 commands  ################
+aws ec2 describe-instances ===> List existing EC2 instances
+aws ec2 run-instances --image-id ami-0abcdef1234567890 --instance-type t2.micro --key-name MyKeyPair ===> Create a new instance
+aws ec2 stop-instances --instance-ids i-08df669030876ee14 ===> Stop an instance
+aws ec2 start-instances --instance-ids i-08df669030876ee14 ===> Start an instance
+aws ec2 describe-instance-status --instance-ids i-08df669030876ee14 ===> List an instance
+
+################  AWS_CLI EC2 commands  ################
+zip function.zip lambda_function.py ===> Zip the lambda function
+aws lambda create-function --function-name cli_demo --runtime python3.9 --handler lambda_function.lambda_handler --role arn:aws:iam::123456789012:role/lambda-role --zip-file fileb://function.zip ===> Create a new function
+aws lambda invoke --function-name cli_demo output.txt ===> Invoke the new function
